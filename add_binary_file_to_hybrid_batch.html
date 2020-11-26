@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//RU" "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<title>GENERATOR</title>
+<style type="text/css">
+#readme {
+	font-family: Book Antique; 
+	font-size:12pt;
+}
+
+#copyright {
+	width:200px;
+	font-family:Book Antique; 
+	font-size:12pt;
+	margin:0px 0px 0px auto;
+}
+
+#log {
+	width:200px;
+	font-family:Book Antique; 
+	font-size:12pt;
+	color:#a9a9A9;
+	margin:0px auto;
+}
+
+#main{
+	width:800px; 
+	margin:5px auto;
+}
+
+body {
+	margin-top:50px;
+	margin-bottom:50px;
+	font-family:Comic Sans MS, comic sans serif; color:#333333; font-size:14px;
+}
+
+button {
+	color:#333333; 
+	font-size:14px;
+	width:100px;
+	height:40px;
+}
+
+table {
+ margin: 2px 2px 2px 2px; 
+ background-color:#F9F6F9; 
+ border:1px solid #D4BC4C; 
+ color:#a9a9A9; 
+ font-family: Book Antique; 
+ font-size:10pt;
+}
+
+tr {
+vertical-align: top;
+}
+</style>
+<script text=javascript>
+//for create adodb.stream:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\ActiveX Compatibility\{00000566-0000-0010-8000-00AA006D2EA4}\Compatibility Flags
+ErrorHandler = function(message, url, line){
+	document.getElementById("log").innerHTML = message;
+	return true;
+}
+
+window.onerror = ErrorHandler;
+
+//Считываем содержимое текстового файла в переменную JScript:
+function GetTextFile(path)
+{
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	var read = fso.OpenTextFile(path);
+	var text = "";
+	if (!read.AtEndOfStream) text = read.ReadAll();
+	read.Close();
+ return text;
+}
+
+//Записываем текст из переменной JScript в текстовый файл:
+function PutTextFile(path,text)
+{
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	var read = fso.OpenTextFile(path,2,true); // 8 - Append
+    var path = read.Path;
+	read.Write(text);
+    read.Close();
+ return path;
+}
+
+function GetPath(path){
+	var fso = new ActiveXObject("Scripting.FileSystemObject");
+	var read = fso.OpenTextFile(path); // 8 - Append
+    var path = read.Path;
+	read.Close();
+ return path;
+}
+
+function readAllBytes(path) {
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var ts = fso.OpenTextFile(path, 1);
+		var a = [];
+        while (!ts.AtEndOfStream)
+            a.push(ts.Read(1).charCodeAt(0));
+
+        ts.Close();
+    return a;
+}
+
+function writeAllBytes(path, arr) {
+	var outStr="";
+	var fso, f;
+	for(var i=0;i<arr.length;i++) outStr += String.fromCharCode(arr[i]);
+	fso = new ActiveXObject("Scripting.FileSystemObject");
+	f = fso.OpenTextFile(path, 2, true); 
+	f.Write(outStr);
+	f.close();
+ return 0;
+}
+
+var rnd_char = function(str){
+	var sr = str.replace(/[^a-z]+/g, '');
+	var rnum = Math.floor(Math.random() * sr.length);
+	return sr.substring(rnum,rnum+1);
+}
+
+var rnd_str = function(str,col){
+	var ret = '';
+	for(var i=0;i<col;i++) ret = ret + rnd_char(str);
+	return ret;
+}
+
+var toGenerate = function(){
+	var template = document.getElementById("template_file").value;
+	var template_str = GetTextFile(template);
+	var src = document.getElementById("src_file").value;
+	var src_str = readAllBytes(src).join(",");
+	var out_str = template_str.replace(/\/\/\*\{([\s\S]*?)\/\/\}\*/gim, 'var exec_file="'+src_str+'";');
+	document.getElementById("dest").value = out_str;
+	var rnd_name = rnd_str("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567889",10);
+	var template_path = template.split("\\");
+	template_path.splice(template_path.length-2, 2);
+	template_path = template_path.join("\\");
+	var save_path = template_path+"\\out\\"+rnd_name+".cmd";
+	PutTextFile(save_path, out_str);
+	document.getElementById("save_path").innerHTML = save_path;
+ return 0;
+}
+
+window.onload=function(){
+document.getElementById("template_file").value="template_hybrid.cmd";
+alert(document.getElementById("template_file").value);
+}
+</script>
+</HEAD>
+<BODY>
+<DIV id="log"></DIV>
+<DIV id="main">
+<table border=0 cellspacing=2 cellpadding=2>
+	<tr>
+	<td colspan="2" style="border:1px solid #D4BC4C; color:#D6A7A0;"><center>------------------------ Generate hybrid batch & javascript ------------------------------</center></td>
+	</tr>
+	<tr>
+	<td>Template 'cmd' File</td>
+	<td width="80%"><input type="file" id="template_file" /></td>
+	</tr>
+	<tr>
+	<td>Source 'exe' File</td>
+	<td width="80%"><input type="file" id="src_file" /></td>
+	</tr>
+	<tr>
+	<td colspan="2" width="80%"><button onclick="toGenerate();">run</button></td>
+	</tr>
+	<td>Generate DATA</td>
+	<td width="20%"><TEXTAREA COLS="60" ROWS="20" id="dest"></TEXTAREA></td>
+	</tr>
+	</tr>
+	<td>Save generate file path</td>
+	<td width="20%"><div id="save_path"></div></td>
+	</tr>
+</table>
+</DIV>
+<DIV id="copyright">
+Created by U.G. 2017
+</DIV>
+</BODY>
+</HTML>
